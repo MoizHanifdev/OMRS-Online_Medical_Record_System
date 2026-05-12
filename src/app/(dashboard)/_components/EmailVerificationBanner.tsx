@@ -15,10 +15,17 @@ export function EmailVerificationBanner() {
     try {
       const res = await fetch('/api/v1/auth/resend-verification', { method: 'POST' });
       if (res.ok) {
-        toast.success('Verification email sent! Check your inbox.');
+        const data = await res.json();
+        if (data.data?.verified) {
+          // User was auto-verified in dev mode — reload to refresh session
+          toast.success('Email verified! Unlocking all features...');
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          toast.success('Verification email sent! Check your inbox.');
+        }
       } else {
         const error = await res.json();
-        toast.error(error.message || 'Failed to resend email');
+        toast.error(error.error?.message || 'Failed to resend email');
       }
     } catch (err) {
       toast.error('An error occurred. Please try again.');

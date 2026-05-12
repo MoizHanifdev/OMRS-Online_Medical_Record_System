@@ -52,35 +52,37 @@ export const POST = createApiPipeline(
       throw err;
     }
 
-    // Verification token
-    const token = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    
-    await EmailVerificationToken.create({
-      userId: newUser._id,
-      token: hashedToken,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins
-    });
+    // Email verification
+    const isDevMode = process.env.NODE_ENV !== 'production' || !process.env.EMAIL_FROM;
 
-    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
-    
-    // In local development, if no Resend API key is provided, print the link to the terminal
-    if (!process.env.RESEND_API_KEY) {
-      console.log(`\n\n=============================================================`);
-      console.log(`✉️ [DEV MODE] Email verification link for ${newUser.email}:`);
-      console.log(`${verifyUrl}`);
-      console.log(`=============================================================\n\n`);
+    if (isDevMode) {
+      // In development: auto-verify the user so all features are unlocked immediately
+      newUser.isEmailVerified = true;
+      newUser.emailVerifiedAt = new Date();
+      await newUser.save();
+      console.log(`[DEV MODE] Auto-verified email for ${newUser.email} — all features unlocked!`);
+    } else {
+      // In production: send a real verification email
+      const token = crypto.randomBytes(32).toString('hex');
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+      await EmailVerificationToken.create({
+        userId: newUser._id,
+        token: hashedToken,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins
+      });
+
+      const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
+      await sendEmail({
+        to: newUser.email,
+        subject: 'Verify your email address',
+        react: VerifyEmail({ verifyUrl }),
+      });
     }
-
-    await sendEmail({
-      to: newUser.email,
-      subject: 'Verify your email address',
-      react: VerifyEmail({ verifyUrl }),
-    });
 
     return {
       user: newUser.toPublicJSON(),
-      requiresEmailVerification: true,
+      requiresEmailVerification: !isDevMode,
     };
   },
   {

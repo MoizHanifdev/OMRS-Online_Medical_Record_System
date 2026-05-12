@@ -80,7 +80,7 @@ const PatientProfileSchema = new Schema<IPatientProfile>(
   { timestamps: true }
 );
 
-PatientProfileSchema.index({ 'address.coordinates': '2dsphere' });
+// 2dsphere index removed — not needed during onboarding, causes failures when coordinates are empty
 
 PatientProfileSchema.virtual('age').get(function () {
   if (!this.dateOfBirth) return 0;
