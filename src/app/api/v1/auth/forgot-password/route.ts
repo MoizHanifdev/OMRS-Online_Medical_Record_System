@@ -33,13 +33,17 @@ export const POST = createApiPipeline(
     console.log(`${resetUrl}`);
     console.log(`=============================================================\n\n`);
 
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: user.email,
       subject: 'Reset your OMRS password',
       react: PasswordResetEmail({ resetUrl }),
     });
 
-    return { success: true };
+    return { 
+      success: true,
+      emailSent: emailResult.success,
+      warning: !emailResult.success ? 'Email delivery failed. Check terminal for the link.' : undefined
+    };
   },
   {
     bodySchema: forgotPasswordSchema,

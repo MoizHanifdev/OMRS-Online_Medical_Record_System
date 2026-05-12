@@ -70,7 +70,7 @@ export const POST = createApiPipeline(
     console.log(`${verifyUrl}`);
     console.log(`=============================================================\n\n`);
 
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: newUser.email,
       subject: 'Verify your email address',
       react: VerifyEmail({ verifyUrl }),
@@ -79,6 +79,8 @@ export const POST = createApiPipeline(
     return {
       user: newUser.toPublicJSON(),
       requiresEmailVerification: true,
+      emailSent: emailResult.success,
+      warning: !emailResult.success ? 'Email delivery failed. If you are in development, please check the server terminal for the verification link.' : undefined
     };
   },
   {

@@ -30,11 +30,19 @@ export const POST = createApiPipeline(
     console.log(`${verifyUrl}`);
     console.log(`=============================================================\n\n`);
 
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: dbUser.email,
       subject: 'Verify your email address',
       react: VerifyEmail({ verifyUrl }),
     });
+
+    if (!emailResult.success) {
+      return { 
+        success: false, 
+        error: 'Email delivery failed. Please check the server terminal for the link or try again later.',
+        details: emailResult.error
+      };
+    }
 
     return { success: true };
   },

@@ -11,8 +11,9 @@ export async function sendEmail({ to, subject, react }: { to: string; subject: s
 
   try {
     console.log(`[Email] Sending "${subject}" to ${to}...`);
+    const fromAddress = (process.env.EMAIL_FROM || 'OMRS <onboarding@resend.dev>').trim();
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'OMRS <onboarding@resend.dev>',
+      from: fromAddress,
       to,
       subject,
       react,
@@ -27,11 +28,11 @@ export async function sendEmail({ to, subject, react }: { to: string; subject: s
         console.log('To send to any email, you must verify a domain in the Resend dashboard and update your EMAIL_FROM.\n');
       }
 
-      return { id: 'error', error: error.message };
+      return { success: false, error: error.message };
     }
 
     console.log(`[Email] Successfully sent to ${to}, id:`, data?.id);
-    return data;
+    return { success: true, id: data?.id };
   } catch (err) {
     console.error('[Email] Unexpected error sending email:', err);
     // Don't throw — email failure should not block signup/verification flows
