@@ -52,37 +52,33 @@ export const POST = createApiPipeline(
       throw err;
     }
 
-    // Email verification
-    const isDevMode = process.env.NODE_ENV !== 'production' || !process.env.EMAIL_FROM;
+    // Verification token
+    const token = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    
+    await EmailVerificationToken.create({
+      userId: newUser._id,
+      token: hashedToken,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins
+    });
 
-    if (isDevMode) {
-      // In development: auto-verify the user so all features are unlocked immediately
-      newUser.isEmailVerified = true;
-      newUser.emailVerifiedAt = new Date();
-      await newUser.save();
-      console.log(`[DEV MODE] Auto-verified email for ${newUser.email} — all features unlocked!`);
-    } else {
-      // In production: send a real verification email
-      const token = crypto.randomBytes(32).toString('hex');
-      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
+    
+    // Always log for dev convenience
+    console.log(`\n\n=============================================================`);
+    console.log(`✉️ Verification link for ${newUser.email}:`);
+    console.log(`${verifyUrl}`);
+    console.log(`=============================================================\n\n`);
 
-      await EmailVerificationToken.create({
-        userId: newUser._id,
-        token: hashedToken,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins
-      });
-
-      const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
-      await sendEmail({
-        to: newUser.email,
-        subject: 'Verify your email address',
-        react: VerifyEmail({ verifyUrl }),
-      });
-    }
+    await sendEmail({
+      to: newUser.email,
+      subject: 'Verify your email address',
+      react: VerifyEmail({ verifyUrl }),
+    });
 
     return {
       user: newUser.toPublicJSON(),
-      requiresEmailVerification: !isDevMode,
+      requiresEmailVerification: true,
     };
   },
   {

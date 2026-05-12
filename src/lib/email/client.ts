@@ -20,7 +20,13 @@ export async function sendEmail({ to, subject, react }: { to: string; subject: s
 
     if (error) {
       console.error('[Resend Error]', error);
-      // Don't throw — email failure should not block signup/verification flows
+      
+      // Provide a helpful hint for the testing restriction error
+      if ((error as any).statusCode === 403) {
+        console.log('\n💡 TIP: While using onboarding@resend.dev, you can only send emails to YOUR Resend account email (e.g. moizhanif.dev@gmail.com).');
+        console.log('To send to any email, you must verify a domain in the Resend dashboard and update your EMAIL_FROM.\n');
+      }
+
       return { id: 'error', error: error.message };
     }
 

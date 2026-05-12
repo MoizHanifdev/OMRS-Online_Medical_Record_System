@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 export function EmailVerifyContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const { data: session, update } = useSession();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -26,6 +28,12 @@ export function EmailVerifyContent() {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error?.message || 'Verification failed');
+        
+        // If the user is logged in, refresh their session to reflect the verified status
+        if (session) {
+          update();
+        }
+        
         setStatus('success');
       })
       .catch((err) => {

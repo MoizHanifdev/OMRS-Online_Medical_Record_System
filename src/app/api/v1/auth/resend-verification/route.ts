@@ -13,18 +13,6 @@ export const POST = createApiPipeline(
       return { success: true }; // Silent success
     }
 
-    const isDevMode = process.env.NODE_ENV !== 'production' || !process.env.EMAIL_FROM;
-
-    if (isDevMode) {
-      // In development: auto-verify the user immediately
-      dbUser.isEmailVerified = true;
-      dbUser.emailVerifiedAt = new Date();
-      await dbUser.save();
-      console.log(`[DEV MODE] Auto-verified email for ${dbUser.email} — all features unlocked!`);
-      return { success: true, verified: true };
-    }
-
-    // In production: send a real verification email
     const token = crypto.randomBytes(32).toString('hex');
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
     
@@ -35,6 +23,12 @@ export const POST = createApiPipeline(
     });
 
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
+
+    // Always log for dev convenience
+    console.log(`\n\n=============================================================`);
+    console.log(`✉️ Verification link for ${dbUser.email}:`);
+    console.log(`${verifyUrl}`);
+    console.log(`=============================================================\n\n`);
 
     await sendEmail({
       to: dbUser.email,

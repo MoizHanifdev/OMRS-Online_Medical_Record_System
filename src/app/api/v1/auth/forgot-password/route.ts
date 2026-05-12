@@ -26,6 +26,13 @@ export const POST = createApiPipeline(
     });
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+    
+    // Always log for dev convenience
+    console.log(`\n\n=============================================================`);
+    console.log(`✉️ Password reset link for ${user.email}:`);
+    console.log(`${resetUrl}`);
+    console.log(`=============================================================\n\n`);
+
     await sendEmail({
       to: user.email,
       subject: 'Reset your OMRS password',

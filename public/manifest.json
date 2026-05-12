@@ -1,0 +1,16 @@
+{
+  "name": "OMRS — Online Medical Record System",
+  "short_name": "OMRS",
+  "description": "The Modern Operating System for Medical Records",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0066cc",
+  "icons": [
+    {
+      "src": "/next.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
