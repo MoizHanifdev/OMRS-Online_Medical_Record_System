@@ -69,7 +69,10 @@ export function createApiPipeline<
         if (options.middlewares && Array.isArray(options.middlewares)) {
           // Apply middlewares from right to left so they execute left to right
           for (let i = options.middlewares.length - 1; i >= 0; i--) {
-            executableHandler = options.middlewares[i](executableHandler);
+            const middleware = options.middlewares[i];
+            if (middleware) {
+              executableHandler = middleware(executableHandler);
+            }
           }
         }
 
