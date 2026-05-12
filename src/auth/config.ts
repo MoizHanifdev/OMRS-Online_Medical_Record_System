@@ -37,16 +37,26 @@ export const authConfig: NextAuthConfig = {
 
         await connectDB();
         const parsed = credentialsSchema.safeParse(credentials);
-        if (!parsed.success) throw new Error('INVALID_CREDENTIALS');
+        if (!parsed.success) {
+          console.error('[AUTH DEBUG] Zod validation failed:', parsed.error);
+          throw new Error('INVALID_CREDENTIALS');
+        }
 
         const { email, password, twoFactorCode } = parsed.data;
         const user = await User.findOne({ email: email.toLowerCase() }).select('+password +twoFactorSecret');
-        if (!user) throw new Error('INVALID_CREDENTIALS');
+        if (!user) {
+          console.error('[AUTH DEBUG] User not found for email:', email.toLowerCase());
+          throw new Error('INVALID_CREDENTIALS');
+        }
 
-        if (await isAccountLocked(user)) throw new Error('ACCOUNT_LOCKED');
+        if (await isAccountLocked(user)) {
+          console.error('[AUTH DEBUG] Account locked for:', email);
+          throw new Error('ACCOUNT_LOCKED');
+        }
 
         const valid = await user.comparePassword(password);
         if (!valid) {
+          console.error('[AUTH DEBUG] Password mismatch for:', email);
           await recordLoginAttempt(user, false, req);
           throw new Error('INVALID_CREDENTIALS');
         }
