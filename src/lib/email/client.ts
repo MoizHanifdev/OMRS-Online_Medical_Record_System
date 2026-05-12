@@ -8,10 +8,17 @@ export async function sendEmail({ to, subject, react }: { to: string; subject: s
     return { id: 'stub-id' };
   }
 
-  return resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: process.env.EMAIL_FROM || 'OMRS <onboarding@resend.dev>',
     to,
     subject,
     react,
   });
+
+  if (error) {
+    console.error('[Resend Error]', error);
+    throw new Error(error.message);
+  }
+
+  return data;
 }

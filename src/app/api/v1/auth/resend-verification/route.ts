@@ -23,6 +23,15 @@ export const POST = createApiPipeline(
     });
 
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
+    
+    // In local development, if no Resend API key is provided, print the link to the terminal
+    if (!process.env.RESEND_API_KEY) {
+      console.log(`\n\n=============================================================`);
+      console.log(`✉️ [DEV MODE] Email verification link for ${dbUser.email}:`);
+      console.log(`${verifyUrl}`);
+      console.log(`=============================================================\n\n`);
+    }
+
     await sendEmail({
       to: dbUser.email,
       subject: 'Verify your email address',
