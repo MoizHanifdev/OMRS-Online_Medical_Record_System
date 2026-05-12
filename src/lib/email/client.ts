@@ -9,7 +9,7 @@ export async function sendEmail({ to, subject, react }: { to: string; subject: s
   }
 
   return resend.emails.send({
-    from: process.env.EMAIL_FROM || 'OMRS <noreply@omrs.local>',
+    from: process.env.EMAIL_FROM || 'OMRS <onboarding@resend.dev>',
     to,
     subject,
     react,
