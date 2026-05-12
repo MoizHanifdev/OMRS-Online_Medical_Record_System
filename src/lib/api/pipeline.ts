@@ -18,6 +18,7 @@ interface PipelineOptions<TBody extends z.ZodTypeAny, TQuery extends z.ZodTypeAn
   bodySchema?: TBody;
   querySchema?: TQuery;
   rateLimitId?: string;
+  middlewares?: Array<(handler: any) => any>;
   [key: string]: any;
 }
 
@@ -58,11 +59,21 @@ export function createApiPipeline<
         }
 
         // 4. Execution
-        const result = await handler(req, {
+        const baseContext = {
           ...context,
           body: bodyData as any,
           query: queryData as any,
-        });
+        };
+
+        let executableHandler: any = handler;
+        if (options.middlewares && Array.isArray(options.middlewares)) {
+          // Apply middlewares from right to left so they execute left to right
+          for (let i = options.middlewares.length - 1; i >= 0; i--) {
+            executableHandler = options.middlewares[i](executableHandler);
+          }
+        }
+
+        const result = await executableHandler(req, baseContext);
 
         // If handler returned a NextResponse directly, return it
         if (result instanceof NextResponse) {
