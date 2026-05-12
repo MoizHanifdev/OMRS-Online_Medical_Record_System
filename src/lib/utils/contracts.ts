@@ -1,0 +1,27 @@
+export class BaseError extends Error {
+  code: string;
+  statusCode: number;
+  details?: Record<string, any>;
+
+  constructor(code: string, message: string, statusCode: number, details?: Record<string, any>) {
+    super(message);
+    this.name = this.constructor.name;
+    this.code = code;
+    this.statusCode = statusCode;
+    this.details = details;
+  }
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: Record<string, any>;
+  };
+  meta?: {
+    timestamp?: string;
+    [key: string]: any;
+  };
+}

@@ -1,0 +1,16 @@
+---
+title: "Passkeys and Multi-Factor Authentication"
+date: "2026-05-10"
+version: "v1.2.0"
+type: "Feature"
+---
+
+Security is our top priority. With this release, we are introducing **Passkeys (WebAuthn)** and **Time-based One-Time Passwords (TOTP)**.
+
+- **Passkeys:** You can now log in using your device's biometric sensors (Touch ID, Face ID, Windows Hello) without needing a password.
+- **TOTP 2FA:** For organizations requiring strict compliance, administrators can now enforce 2FA across the entire clinic.
+- **Step-Up Authentication:** Sensitive actions (like exporting a large patient list) now prompt for a biometric re-verification.
+
+<Callout type="success">
+  These features ensure OMRS exceeds HIPAA and SOC 2 Type II security requirements.
+</Callout>
